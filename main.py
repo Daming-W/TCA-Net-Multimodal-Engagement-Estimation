@@ -10,6 +10,7 @@ from utils.dataset import get_dataset, process_dataset, noxi_dataset
 from utils.dataset import get_dataset_TFN, noxi_dataset_TFN
 from utils.model import get_model
 from utils.engine import train_one_epoch, evaluate_one_epoch
+from utils.logger import Logger
 
 ######################
 ### ArgumentParser ###
@@ -38,14 +39,16 @@ def parse_arguments():
     parser.add_argument("--num_workers", type=int, default=8, help="number of workers")
     parser.add_argument("--batch_size", type=int, default=64, help="batch size")
     parser.add_argument("--num_epoch", type=int, default=30, help="number of epochs")  
-    parser.add_argument("--lr", type=float, default=1e-8, help="learning rate")      
+    parser.add_argument("--lr", type=float, default=1e-5, help="learning rate")      
+    parser.add_argument("--min_lr", type=float, default=1e-6, help="min learning rate for scheduler") 
+    parser.add_argument("--do_scheduler", type=bool, default=True, help="do scheduler or not") 
     parser.add_argument("--weight_decay", type=float, default=0.001, help="weight_decay")
     parser.add_argument("--eps", type=float, default=1e-8, help="eps")
     return parser.parse_args()
 
-#####################
-### Mainw Workder ###
-#####################
+####################
+### Main Workder ###
+####################
 if __name__ == '__main__':
     args = parse_arguments()
     print(args,'\n')
@@ -119,6 +122,7 @@ if __name__ == '__main__':
     exclude = lambda n, p: p.ndim < 2 or "bn" in n or "ln" in n or "bias" in n or 'logit_scale' in n
     include = lambda n, p: not exclude(n, p)
     named_parameters = list(model.named_parameters())
+
     # filter out the frozen parameters
     gain_or_bias_params = [p for n, p in named_parameters if exclude(n, p) and p.requires_grad]
     rest_params = [p for n, p in named_parameters if include(n, p) and p.requires_grad]
@@ -127,15 +131,28 @@ if __name__ == '__main__':
         {"params": rest_params, "weight_decay": args.weight_decay}],
         lr=args.lr, eps=args.eps)
     
+    # set lr scheduler
+    lr_scheduler_cosann = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=int(len(train_dataloader) * args.epochs), eta_min=args.min_lr)
+
     # criterion
     criterion=torch.nn.MSELoss()
+
+    # setup logger
+    logger = Logger('logs/'+args.logger_name+' '+args.method+'.log',True)
+    logger.append(args)
+    print('finish setting logger')
 
     # training
     print('\n Start Training \n')
 
     for epoch in range(args.num_epoch):
-        train_one_epoch(args, train_dataloader, model, optimizer, criterion)
-        evaluate_one_epoch(args, val_dataloader, model, criterion)
+        
+        print(f'Current EPOCH : {epoch+1}')
+        logger.append(f'epoch : {epoch+1}')
+
+        train_one_epoch(args, train_dataloader, model, optimizer, criterion, lr_scheduler_cosann, logger)
+        evaluate_one_epoch(args, val_dataloader, model, criterion, logger)
 
         # save ckp
         if (epoch+1)%args.save_freq==0:

@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 from .metrics import concordance_correlation_coefficient
 
-def train_one_epoch(args, dataloader, model, optimizer, criterion):
+def train_one_epoch(args, dataloader, model, optimizer, criterion, lr_scheduler, logger):
     # set loss and acc lists
     total_loss,total_acc = [],[]
     # train mode
@@ -29,6 +29,9 @@ def train_one_epoch(args, dataloader, model, optimizer, criterion):
             # backward and step over
             loss.backward()
             optimizer.step()
+            # do scheduler
+            if args.do_scheduler==True:
+                lr_scheduler.step()
             # sum losses in an epoch
             total_loss.append(loss.detach().cpu())
             total_acc.append(acc)
@@ -38,8 +41,12 @@ def train_one_epoch(args, dataloader, model, optimizer, criterion):
                               'acc(iter)':acc,
                               'acc(mean)':np.mean(total_acc)})
             pbar.update(1)
+    # update logger    
+    epoch_loss = np.nanmean(total_loss)    
+    logger.append(f'train_epoch_loss: {epoch_loss}')
+    logger.append(f'train_lr : {lr_scheduler.get_last_lr()[0]}')
 
-def evaluate_one_epoch(args, dataloader, model, criterion):
+def evaluate_one_epoch(args, dataloader, model, criterion, logger):
     # set loss and acc lists
     total_loss,total_acc = [],[]
     # train mode
@@ -68,5 +75,6 @@ def evaluate_one_epoch(args, dataloader, model, criterion):
                               'acc(iter)':acc,
                               'acc(mean)':np.mean(total_acc)})
             pbar.update(1)
-
-        
+    # update logger  
+    epoch_loss = np.nanmean(total_loss)
+    logger.append(f'evalutation_epoch_loss: {epoch_loss}')    
