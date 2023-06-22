@@ -12,5 +12,5 @@ Program will walk though each subsets.
 
 TODO List:
 -- upgrade modality fusion module
--- check loss criterion
+
 -- improve training functionality
