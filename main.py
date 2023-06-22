@@ -133,7 +133,7 @@ if __name__ == '__main__':
     
     # set lr scheduler
     lr_scheduler_cosann = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=int(len(train_dataloader) * args.epochs), eta_min=args.min_lr)
+        optimizer, T_max=int(len(train_dataloader) * args.num_epoch), eta_min=args.min_lr)
 
     # criterion
     criterion=torch.nn.MSELoss()
