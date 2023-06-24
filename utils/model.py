@@ -17,6 +17,9 @@ def get_model(args):
         model = ModalityFusionModel_simple(args.baseline_dim_list[0], args.baseline_dim_list[1], args.baseline_dim_list[2])
     elif args.method == 'TFN':
         model = TFN(args.TFN_hidden_dims, args.TFN_dropouts, args.TFN_post_fusion_dim)
+    elif args.method == 'TFN_LSTM':
+        tfn = TFN(args.TFN_hidden_dims, args.TFN_dropouts, args.TFN_post_fusion_dim)
+        model = TFN_LSTMModel(args=args, TFN=tfn)
     else:
         NotImplementedError
 
@@ -128,9 +131,26 @@ class TFN(nn.Module):
         self.output_range = Parameter(torch.FloatTensor([6]), requires_grad=False)
         self.output_shift = Parameter(torch.FloatTensor([-3]), requires_grad=False)
 
+    def get_fusion_tensor(self, audio_h, video_h, kinect_h):
 
+        batch_size = audio_h.data.shape[0]
+
+        if audio_h.is_cuda:
+            DTYPE = torch.cuda.FloatTensor
+        else:
+            DTYPE = torch.FloatTensor
+
+        _audio_h = torch.cat((Variable(torch.ones(batch_size, 1).type(DTYPE), requires_grad=False), audio_h), dim=1)
+        _video_h = torch.cat((Variable(torch.ones(batch_size, 1).type(DTYPE), requires_grad=False), video_h), dim=1)
+        _kinect_h = torch.cat((Variable(torch.ones(batch_size, 1).type(DTYPE), requires_grad=False), kinect_h), dim=1)
+
+        fusion_tensor = torch.bmm(_audio_h.unsqueeze(2), _video_h.unsqueeze(1))
+        fusion_tensor = fusion_tensor.view(-1, (self.audio_hidden + 1) * (self.video_hidden + 1), 1)
+        fusion_tensor = torch.bmm(fusion_tensor, _kinect_h.unsqueeze(1)).view(batch_size, -1)
+
+        return fusion_tensor
+    
     def forward(self, audio_h, video_h, kinect_h):
-
 
         batch_size = audio_h.data.shape[0]
 
@@ -162,6 +182,36 @@ class TFN(nn.Module):
         output = post_fusion_y_3 * self.output_range + self.output_shift
 
         return output.view(-1)
+    
+
+class TFN_LSTMModel(nn.Module):
+    def __init__(self, args, TFN):
+        super(TFN_LSTMModel, self).__init__()
+
+        self.args = args
+        self.TFN = TFN
+# seq bs dim
+# data: [10, bs, dim1, dim2, dim3]
+# fusion = [tfn(data_sample) for data_sample in data]
+# fusion: [10, bs, 12w]
+
+
+        # self.lstm = nn.LSTM(input_dim, self.hidden_dim, self.n_layers)
+        # self.linear = nn.Linear(self.hidden_dim, num_outs)
+
+    def forward(self, audio_h, video_h, kinect_h):
+        x = self.TFN.get_fusion_tensor(audio_h, video_h, kinect_h)
+        print(x.shape)
+        h0 = torch.randn(self.args.lstm_n_layers, self.args.lstm_hidden_dim)
+        c0 = torch.randn(self.args.lstm_n_layers, self.args.lstm_hidden_dim)
+
+        self.lstm = nn.LSTM(x.shape[0], self.args.lstm_hidden_dim, self.args.lstm_n_layers)
+        self.linear = nn.Linear(self.args.lstm_hidden_dim, x.shape[1])
+
+        lstm_output, (hn, cn) = self.lstm(x, (h0, c0)) 
+        output = self.linear(lstm_output)
+
+        return output.view(-1)
 
 if __name__ == '__main__':
     # Example usage
@@ -171,8 +221,8 @@ if __name__ == '__main__':
 
     # Get model
     #model = ModalityFusionModule_attention(input_shapes, hidden_units, output_units)
-    model = TFN(
-        hidden_dims=[1023,314,367], #video,audio,kinect
+    fusion_model = TFN(
+        hidden_dims=[10, 3, 3], #video,audio,kinect 1023,314,367
         dropouts=[0.01,0.01,0.01,0.01],
         post_fusion_dim=256
     )
@@ -180,8 +230,16 @@ if __name__ == '__main__':
     # Example forward pass
     input_data = torch.randn(161798, 83)  # Your concatenated input data
 
-    audio_h,video_h,text_h = torch.randn(161798, 1024),torch.randn(161798, 314),torch.randn(161798, 367)
+    audio_h,video_h,text_h = torch.randn(161798, 10),torch.randn(161798, 3),torch.randn(161798, 3)
 
-    output = model(audio_h,video_h,text_h)
-
-    print(output)
+    fusion_data = fusion_model(audio_h,video_h,text_h)
+    print(fusion_data)
+    fusion_data = fusion_data.unsqueeze(0)
+    print(fusion_data.shape)
+    lstm_model = TFN_LSTMModel(input_dim=161798,
+                           hidden_dim=512, 
+                           n_layers=2, 
+                           num_outs=161798)
+    output = lstm_model(fusion_data)
+    print(output.shape)
+    

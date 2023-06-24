@@ -19,7 +19,7 @@ def train_one_epoch(args, dataloader, model, optimizer, criterion, lr_scheduler,
             # model computation
             if args.method == 'baseline': 
                 outputs = model(inputs)
-            elif args.method == 'TFN':
+            elif 'TFN' in args.method:
                 outputs = model(inputs[0],inputs[1],inputs[2])
             else:
                 NotImplementedError
@@ -59,7 +59,7 @@ def evaluate_one_epoch(args, dataloader, model, criterion, logger):
                 # model computation
                 if args.method == 'baseline': 
                     outputs = model(inputs)
-                elif args.method == 'TFN':
+                elif 'TFN' in args.method:
                     outputs = model(inputs[0],inputs[1],inputs[2])
                 else:
                     NotImplementedError

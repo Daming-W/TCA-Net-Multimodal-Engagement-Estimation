@@ -21,7 +21,7 @@ def parse_arguments():
     parser.add_argument("--dataset_path", type=str, default="/Users/damingw/ACM_MM/dataset/", help="directory of dataset")
     parser.add_argument("--preprocess", type=str, default="dim_reduction", help="method of preprocess")
     # model
-    parser.add_argument("--method", type=str, default="TFN", help="main model selected")
+    parser.add_argument("--method", type=str, default="TFN_LSTM", help="main model selected")
     parser.add_argument("--save_path", type=str, default="checkpoints/", help="path to save model ckp")
     parser.add_argument("--save_freq", type=int, default=5, help="save model per number of epoch")
     parser.add_argument("--logger_name", type=str, default="test", help="logger name")
@@ -35,6 +35,11 @@ def parse_arguments():
                         help="[audio_dropout,video_dropout,kinect_dropout,post_fusion_dropout]")  
     parser.add_argument("--TFN_post_fusion_dim", type=int, default=16, 
                         help="specifying the size of the sub-networks after tensorfusion")    
+    # TFN_LSTM model parameters
+    parser.add_argument("--lstm_hidden_dim", type=int, default=512, # 314,1023,367
+                        help="the hidden dimension size of LSTM")    
+    parser.add_argument("--lstm_n_layers", type=int, default=2, # 314,1023,367
+                        help="the number of reccurent layers")  
     # hyperparameters
     parser.add_argument("--num_workers", type=int, default=8, help="number of workers")
     parser.add_argument("--batch_size", type=int, default=64, help="batch size")
@@ -88,7 +93,7 @@ if __name__ == '__main__':
         train_dataset = noxi_dataset(X_train, train_labels)
         val_dataset = noxi_dataset(x_val_pca, val_labels)
 
-    elif args.method == 'TFN':
+    elif args.method == 'TFN' or args.method == 'TFN_LSTM':
         # get dataset
         t_data_audio,t_data_video,t_data_kinect, t_labels = get_dataset_TFN(train_dir, modalities, modalities_dim)
         v_data_audio,v_data_video,v_data_kinect, v_labels = get_dataset_TFN(val_dir, modalities, modalities_dim)
@@ -139,7 +144,7 @@ if __name__ == '__main__':
     criterion=torch.nn.MSELoss()
 
     # setup logger
-    logger = Logger('logs/'+args.logger_name+' '+args.method+'.log',True)
+    logger = Logger('logs/'+args.logger_name+'_'+args.method+'.log',True)
     logger.append(args)
     print('finish setting logger')
 
