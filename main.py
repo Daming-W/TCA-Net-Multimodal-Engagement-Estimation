@@ -56,8 +56,14 @@ def parse_arguments():
 ### Main Workder ###
 ####################
 if __name__ == '__main__':
+
+    import warnings
+    warnings.filterwarnings("ignore")
+    
     args = parse_arguments()
     print(args,'\n')
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # pre define modality and dim
     modalities = [
@@ -160,8 +166,8 @@ if __name__ == '__main__':
         print(f'Current EPOCH : {epoch+1}')
         logger.append(f'epoch : {epoch+1}')
 
-        train_one_epoch(args, train_dataloader, model, optimizer, criterion, lr_scheduler_cosann, logger)
-        evaluate_one_epoch(args, val_dataloader, model, criterion, logger)
+        train_one_epoch(args, train_dataloader, model, optimizer, criterion, lr_scheduler_cosann, logger, device)
+        evaluate_one_epoch(args, val_dataloader, model, criterion, logger, device)
 
         # save ckp
         if (epoch+1)%args.save_freq==0:
