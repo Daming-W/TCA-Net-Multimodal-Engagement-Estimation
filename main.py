@@ -4,6 +4,7 @@ import random
 import numpy as np
 import os,argparse,glob,scipy
 from tqdm import tqdm
+from datetime import datetime
 from torch.utils.data import DataLoader,Subset
 
 from utils.dataset import get_dataset, process_dataset, noxi_dataset
@@ -121,6 +122,7 @@ if __name__ == '__main__':
     
     # model 
     model = get_model(args)
+    model = model.to(device)
     print(f'loaded model with the method->{args.method}')
 
     # get optimizer
@@ -144,7 +146,9 @@ if __name__ == '__main__':
     criterion=torch.nn.MSELoss()
 
     # setup logger
-    logger = Logger('logs/'+args.logger_name+'_'+args.method+'.log',True)
+    now = datetime.now()
+    timestamp = now.strftime("%d_%H_%M")
+    logger = Logger('logs/'+args.logger_name+'_'+timestamp+'_'+args.method+'.log',True)
     logger.append(args)
     print('finish setting logger')
 
