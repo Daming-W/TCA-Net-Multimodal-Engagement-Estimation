@@ -85,8 +85,9 @@ def evaluate_one_epoch(args, dataloader, model, criterion, logger, device):
                               'acc(iter)':acc,
                               'acc(mean)':np.mean(total_acc)})
             pbar.update(1)
-    # update logger  
-    epoch_loss = np.nanmean(total_loss)
-    epoch_acc = np.nanmean(total_acc)
-    logger.append(f'evalutation_epoch_loss: {epoch_loss}')    
-    logger.append(f'evalutation_epoch_acc: {epoch_acc}')   
+    if args.test is False:
+        # update logger  
+        epoch_loss = np.nanmean(total_loss)
+        epoch_acc = np.nanmean(total_acc)
+        logger.append(f'evalutation_epoch_loss: {epoch_loss}')    
+        logger.append(f'evalutation_epoch_acc: {epoch_acc}')  
