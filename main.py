@@ -21,6 +21,7 @@ def parse_arguments():
     # data
     parser.add_argument("--dataset_path", type=str, default="/Users/damingw/ACM_MM/dataset/", help="directory of dataset")
     parser.add_argument("--preprocess", type=str, default="dim_reduction", help="method of preprocess")
+    parser.add_argument("--dataset_ratio", type=float, default=0.2, help="the ratio of the sub-dataset")
     # model
     parser.add_argument("--method", type=str, default="TFN_LSTM", help="main model selected")
     parser.add_argument("--save_path", type=str, default="checkpoints/", help="path to save model ckp")
@@ -113,9 +114,10 @@ if __name__ == '__main__':
         # dataloader
         train_dataset = noxi_dataset_TFN(t_audio_pca, t_video_pca, t_kinect_pca, t_labels)
         val_dataset = noxi_dataset_TFN(v_audio_pca, v_video_pca, v_kinect_pca, v_labels)
-        # shuffle
-        train_dataset = torch.utils.data.Subset(train_dataset, torch.randperm(len(train_dataset)))
-        val_dataset = torch.utils.data.Subset(train_dataset, torch.randperm(len(val_dataset)))
+        # shuffle and sub-dataset
+        train_dataset = torch.utils.data.Subset(train_dataset, torch.randperm(int(len(train_dataset)*args.dataset_ratio)))
+        val_dataset = torch.utils.data.Subset(train_dataset, torch.randperm(int(len(val_dataset)*args.dataset_ratio)))
+        
     else:
         NotImplementedError
 
