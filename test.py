@@ -26,7 +26,6 @@ def parse_arguments():
     parser.add_argument("--save_path", type=str, default="checkpoints/", help="path to save model ckp")
     parser.add_argument("--save_freq", type=int, default=5, help="save model per number of epoch")
     parser.add_argument("--logger_name", type=str, default="test", help="logger name")
-    parser.add_argument("--test", type=bool, default=True, help="test pt or not")
     # baseline model parameters
     parser.add_argument("--baseline_dim_list", type=list, default=[83,64,1], 
                         help="[input_shapes,hidden_units,output_units]")
@@ -138,11 +137,6 @@ if __name__ == '__main__':
 
     # criterion
     criterion=torch.nn.MSELoss()
-    
-    # setup logger
-    now = datetime.now()
-    timestamp = now.strftime("%d_%H_%M")
-    logger = Logger('logs/'+args.logger_name+'_'+timestamp+'_'+args.method+'.log',True)
 
     # training
     print('\n Start Testing \n')
@@ -150,4 +144,4 @@ if __name__ == '__main__':
     for epoch in range(args.num_epoch):
         
         print(f'Current EPOCH : {epoch+1}')
-        evaluate_one_epoch(args, val_dataloader, model, criterion, logger, device)
+        evaluate_one_epoch(args, val_dataloader, model, criterion, None, device)
