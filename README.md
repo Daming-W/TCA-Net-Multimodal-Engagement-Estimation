@@ -9,9 +9,3 @@ To be detailed, each NoXi subset should locate in path like dataset/train, datas
 The program will walk through each subset.
 
 --------------------------------------------------------------------------------------------
-
-TODO List:
-
--- Upgrade modality fusion module
-
--- Improve training functionality
