@@ -16,9 +16,12 @@ The code is developed using python 3.8.5. NVIDIA GPUs are needed. The code is de
 # Quick start
 
 Installation：
+
 Clone this repo
+
 pip install -r requirements.txt
-Download dataset subset, please download and place under /data
+
+Download dataset subset, please download and place under ./data
 
 Before the runing, there are few availabel arguments might be adjusted:
     --preprocess: "pca" for doing PCA, else for minmax norm only.
