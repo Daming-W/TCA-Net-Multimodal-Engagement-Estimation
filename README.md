@@ -6,14 +6,14 @@ To address this Multimodal Engagement Estimation, this work introduces a novel m
 
 --------------------------------------------------------------------------------------------
 
-#Environment
+# Environment
 
 The code is developed using python 3.8.5. NVIDIA GPUs are needed. The code is developed and tested using one/multiple NVIDIA V100 GPU card. Other platforms or GPU cards are not fully tested.
 
 
 --------------------------------------------------------------------------------------------
 
-#Quick start
+# Quick start
 
 Installation：
 Clone this repo
