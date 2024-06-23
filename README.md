@@ -45,7 +45,7 @@ Furthermore, as introduced in the ablation study, if users would like to reprodu
 ```bibtex
 @InProceedings{he2024tca-net,
     title = {{TCA}-{N}et: Triplet Concatenated-Attentional Network for Multimodal Engagement Estimation},
-    author = {He, Hongyuan and Wang, Daming and Hasan\supervisor, Md Rakibul and Gedeon, Tom and Hossain, Md Zakir},
+    author = {He, Hongyuan and Wang, Daming and Hasan, Md Rakibul and Gedeon, Tom and Hossain, Md Zakir},
     booktitle = {2024 IEEE International Conference on Image Processing (ICIP)},
     year = {2024},
     organization={IEEE}
