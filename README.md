@@ -44,9 +44,9 @@ Furthermore, as introduced in the ablation study, if users would like to reprodu
 # If you find this repository useful, please cite our paper
 ```bibtex
 @InProceedings{he2024tca-net,
-    author = {He, Hongyuan and Wang, Daming and Hasan\supervisor, Md Rakibul and Gedeon, Tom and Hossain, Md Zakir},
     title = {{TCA}-{N}et: Triplet Concatenated-Attentional Network for Multimodal Engagement Estimation},
-    booktitle = {2024 IEEE International Conference on Image Processing (\textbf{ICIP})},
+    author = {He, Hongyuan and Wang, Daming and Hasan\supervisor, Md Rakibul and Gedeon, Tom and Hossain, Md Zakir},
+    booktitle = {2024 IEEE International Conference on Image Processing (ICIP)},
     year = {2024},
     organization={IEEE}
 }
